@@ -11,7 +11,7 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 def get_gimini_response(question, prompt):
     model = genai.GenerativeModel('gimini-pro')
-    response = model.generate_content([prompt, question])
+    response = model.generate_content([prompt[0], question])
     return response.text
 
 #Function to retrieve data from db
@@ -20,6 +20,8 @@ def read_sql_query(sql, db):
     cur = conn.cursor()
     cur.execute(sql)
     rows = cur.fetchall()
+    conn.commit()
+    conn.close()
     for row in rows:
         print(row)
     return rows
@@ -49,3 +51,12 @@ st.header("Gemini App to Retrieve SQL Data")
 question = st.text_input("input: ", key='input')
 submit = st.button("Ask the question")
 
+#if submit is clicked
+if submit:
+    response = get_gimini_response(question, prompt)
+    print(response)
+    response = read_sql_query(response, 'student.db')
+    st.subheader("The Response is:")
+    for row in response:
+        print(row)
+        st.header(row)
